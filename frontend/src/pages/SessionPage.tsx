@@ -26,6 +26,17 @@ export default function SessionPage() {
 
   return (
     <div className="max-w-xl mx-auto p-6 space-y-6">
+
+      <div className="flex justify-between items-center">
+        {/* Navigate to the new players page */}
+        <button
+          onClick={() => navigate('/players')}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          ➕ Add a player
+        </button>
+      </div>
+
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">📅 Game Sessions</h1>
         {/* Navigate to the new session page */}
