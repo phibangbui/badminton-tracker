@@ -1,27 +1,46 @@
-Install dependencies:
+# Badminton Tracker
 
+A web application to track badminton games, sessions, and player statistics.
+
+## Installation
+
+### 1. Install Dependencies
+
+#### Frontend
+```bash
 cd frontend
 pnpm install
+```
 
+#### Backend
+```bash
 cd ../backend
 pnpm install
+```
 
-Build the frontend:
-
+### 2. Build the Frontend
+```bash
 cd frontend
 pnpm build
+```
 
-Run database migrations:
-
+### 3. Run Database Migrations
+```bash
 cd ../backend
 npx prisma migrate dev --name init
 npx prisma generate
+```
 
-Start the backend server (serves frontend too):
-
+### 4. Start the Backend Server
+The backend server also serves the frontend.
+```bash
 pnpm run build 
-pnpn run start
+pnpm run start
+```
 
-Expose to internet via Cloudflare Tunnel:
+### 5. Expose to the Internet (Optional)
+Use Cloudflare Tunnel to expose the application to the internet.
+```bash
 cloudflared tunnel --url http://localhost:3001
-Use the generated URL (e.g., https://your-name.trycloudflare.com) to access the app from your phone or other devices.
+```
+Use the generated URL (e.g., `https://your-name.trycloudflare.com`) to access the app from your phone or other devices.

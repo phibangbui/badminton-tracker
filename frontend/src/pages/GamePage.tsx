@@ -18,6 +18,7 @@ export default function GamePage() {
     const [schedule, setSchedule] = useState<[string[],string[]][]>([]);
     const [activeSchedIdx, setActiveSchedIdx] = useState<number|null>(null);
     const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
+    const [struckGames, setStruckGames] = useState<Record<number, boolean>>({});
     const navigate = useNavigate();
 
     const handleTeamToggle = (team: 'A' | 'B', id: string) => {
@@ -164,65 +165,95 @@ export default function GamePage() {
     };
     
     return (
-        <div className="flex justify-center items-start min-h-screen bg-gray-900 px-4 py-10">
-        <div className="w-full max-w-xl space-y-10 bg-white p-6 rounded-lg shadow-md text-black">
+        <div className="flex justify-center items-center min-h-screen bg-gray-900 px-4 py-10">
+        <div className="w-full max-w-xl space-y-10 bg-white p-6 rounded-lg shadow-md text-black mx-auto">
     
-        <button
-          onClick={() => navigate('/')}
-          className="mb-4 text-sm text-blue-600 hover:underline"
-        >
-          ← Return to Home
-        </button>
-
-        <div className="p-4 mb-6 bg-gray-50 border rounded">
-        <h2 className="font-semibold mb-2">📅 Generate Schedule</h2>
-        <div className="flex gap-2 items-center">
-          <input
-            type="number"
-            min="1"
-            placeholder="Number of games"
-            value={numToSchedule}
-            onChange={(e) => setNumToSchedule(e.target.value)}
-            className="w-24 p-2 border rounded"
-          />
+        <div className="flex justify-between items-center mb-4">
           <button
-            onClick={handleSchedule}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            onClick={() => navigate('/')}
+            className="text-sm text-blue-600 hover:underline"
           >
-            Generate
+            ← Return to Home
           </button>
+          {activeSessionId && (
+            <button
+              onClick={() => navigate(`/results/${activeSessionId}`)}
+              className="text-lg text-blue-600 hover:text-white bg-blue-100 hover:bg-blue-600 rounded-full p-2 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              title="View Results for This Session"
+              aria-label="View Results for This Session"
+            >
+              👀
+            </button>
+          )}
         </div>
 
-        {schedule.length > 0 && (
-          <ul className="mt-4 space-y-2 text-sm">
+        <div className="p-4 mb-6 bg-gray-50 rounded divide-y divide-blue-100">
+          <h2 className="font-semibold mb-4 text-center text-xl flex items-center justify-center gap-2 !border-none !divide-none">
+            <span role="img" aria-label="calendar">📅</span> Generate Schedule
+          </h2>
+          <div className="flex justify-center items-center gap-4 mb-2">
+            <input
+              type="number"
+              min="1"
+              placeholder="Number of games"
+              value={numToSchedule}
+              onChange={(e) => setNumToSchedule(e.target.value)}
+              className="w-32 p-2 border rounded text-center"
+            />
+            <button
+              onClick={handleSchedule}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Generate
+            </button>
+          </div>
+
+          {schedule.length > 0 && (
+            <ul className="mt-4 flex flex-col gap-2 items-start divide-y divide-blue-100 w-full">
               {schedule.map(([namesA, namesB], idx) => {
                 const isActive = idx === activeSchedIdx;
+                const isStruck = struckGames[idx];
                 return (
                   <li
                     key={idx}
                     onClick={() => {
-                      // fill your form states:
                       setTeamA(rawSchedule[idx][0].map(String));
                       setTeamB(rawSchedule[idx][1].map(String));
                       setActiveSchedIdx(idx);
-                      // clear any previous scores/amount:
                       setScoreA('');
                       setScoreB('');
                       setAmountBet('');
                     }}
-                    className={`
-                      cursor-pointer p-2 border rounded flex justify-between
-                      ${isActive ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-gray-50'}
-                    `}
+                    className={`cursor-pointer rounded grid grid-cols-[1fr_auto] gap-4 px-4 py-3 transition-colors duration-150 select-none w-full ${isActive ? 'bg-blue-50' : 'bg-white hover:bg-gray-50'}`}
                   >
-                    <span>🟦 {namesA.join(' & ')}</span>
-                    <span>🟥 {namesB.join(' & ')}</span>
+                    <div className="grid grid-cols-2 gap-4 items-center">
+                      <span className={`flex items-center gap-2 min-w-0 ${isStruck ? 'line-through text-gray-400' : ''}`}> 
+                        <span className="text-blue-600 text-lg">🟦</span>
+                        <span className="font-medium text-blue-700 truncate">{namesA.join(' & ')}</span>
+                      </span>
+                      <span className={`flex items-center gap-2 min-w-0 justify-self-end ${isStruck ? 'line-through text-gray-400' : ''}`}> 
+                        <span className="text-pink-600 text-lg">🟥</span>
+                        <span className="font-medium text-pink-700 truncate">{namesB.join(' & ')}</span>
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      className={`ml-2 text-xl p-1 rounded-full transition-colors duration-150 ${isStruck ? 'bg-green-200' : 'bg-gray-100 hover:bg-green-100'}`}
+                      onClick={e => {
+                        e.stopPropagation();
+                        setStruckGames((prev) => ({ ...prev, [idx]: !prev[idx] }));
+                      }}
+                      aria-label="Strike out game"
+                      title="Strike out game"
+                    >
+                      🏸
+                    </button>
                   </li>
                 );
               })}
             </ul>
-            )}
-      </div>
+          )}
+        </div>
 
 
         <h2 className="text-2xl font-bold text-center">🏸 Log a Badminton Game</h2>
@@ -348,54 +379,43 @@ export default function GamePage() {
             Submit Game
         </button>
 
-        {activeSessionId && (
-          <Link
-            to={`/results/${activeSessionId}`}
-            className="text-sm text-blue-600 hover:underline inline-block mb-4"
-          >
-            📊 View Results for This Session
-          </Link>
-        )}
-    
         {/* Recent Games */}
         <div className="mt-10">
-            <h2 className="text-xl font-bold mb-4">📜 Recent Games</h2>
-            <div className="space-y-4">
-            {games.map((game) => {
+          <h2 className="text-xl font-bold mb-4">📜 Recent Games</h2>
+          <div className="space-y-4 bg-white/80 rounded-2xl shadow-xl p-4">
+            {games.map((game, idx) => {
                 const teamAPlayers = game.teamA.map((tp: { player: { name: string } }) => tp.player.name).join(' & ');
                 const teamBPlayers = game.teamB.map((tp: { player: { name: string } }) => tp.player.name).join(' & ');         
                 const isAWinner = game.winningTeam === 'A';
                 const isBWinner = game.winningTeam === 'B';
-    
+
                 return (
-                <div
+                  <div
                     key={game.id}
-                    className="p-4 bg-white border rounded-md shadow-sm relative"
-                >
-                    <button
-                    onClick={() => deleteGame(game.id)}
-                    className="absolute top-2 right-2 text-sm text-gray-500 hover:text-red-600"
-                    title="Delete game"
-                    >
-                    🗑️
-                    </button>
-    
-                    <div className="mb-1">
-                    <span className={`font-semibold ${isAWinner ? 'text-blue-600' : ''}`}>
-                        🟦 {teamAPlayers}
-                    </span>{' '}
-                    vs{' '}
-                    <span className={`font-semibold ${isBWinner ? 'text-red-600' : ''}`}>
-                        🟥 {teamBPlayers}
-                    </span>
+                    className={`p-4 bg-gradient-to-br from-blue-50 via-white to-gray-100 rounded-xl shadow flex items-center gap-4 hover:shadow-lg transition-all duration-200${idx !== games.length - 1 ? ' border-b border-blue-100' : ''}`}
+                  >
+                    <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-4">
+                      <div className="mb-1 sm:mb-0">
+                        <span className={`font-semibold ${isAWinner ? 'text-blue-600' : ''}`}>🟦 {teamAPlayers}</span>{' '}
+                        vs{' '}
+                        <span className={`font-semibold ${isBWinner ? 'text-red-600' : ''}`}>🟥 {teamBPlayers}</span>
+                      </div>
+                      <div className="text-sm text-gray-700 flex items-center gap-2">
+                        Score: {game.scoreA} - {game.scoreB} | 💰 Bet: ${game.amountBet}
+                        <button
+                          onClick={() => deleteGame(game.id)}
+                          className="ml-2 text-sm text-gray-500 hover:text-white bg-gray-100 hover:bg-red-600 rounded-full p-2 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-red-400"
+                          title="Delete game"
+                          aria-label="Delete game"
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-700">
-                    Score: {game.scoreA} - {game.scoreB} | 💰 Bet: ${game.amountBet}
-                    </div>
-                </div>
+                  </div>
                 );
             })}
-            </div>
+          </div>
         </div>
 
         </div>
